@@ -13,7 +13,7 @@ const double kDropdownMenuItemHeight = 45.0;
 class DropdownListMenu<T> extends DropdownWidget {
   final List<T>? data;
   final int? selectedIndex;
-  final MenuItemBuilder? itemBuilder;
+  final MenuItemBuilder<T>? itemBuilder;
   final double itemExtent;
 
   DropdownListMenu(

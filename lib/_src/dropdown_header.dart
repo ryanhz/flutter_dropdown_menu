@@ -4,15 +4,15 @@ import 'package:dropdown_menu/_src/drapdown_common.dart';
 
 typedef DropdownMenuHeadTapCallback = void Function(int index);
 
-typedef GetItemLabel = String? Function(dynamic data);
+typedef GetItemLabel<T> = String? Function(T data);
 
-String? defaultGetItemLabel(dynamic data) {
+String? defaultGetItemLabel<T>(T data) {
   if (data is String) return data;
-  return data["title"];
+  return (data as Map)["title"];
 }
 
-class DropdownHeader extends DropdownWidget {
-  final List<dynamic> titles;
+class DropdownHeader<T> extends DropdownWidget {
+  final List<T> titles;
   final int? activeIndex;
   final DropdownMenuHeadTapCallback? onTap;
   final int maxLines;
@@ -25,22 +25,21 @@ class DropdownHeader extends DropdownWidget {
   final double height;
 
   /// get label callback
-  final GetItemLabel getItemLabel;
+  final GetItemLabel<T> getItemLabel;
 
   DropdownHeader(
-      {required this.titles,
+      {super.key,
+      super.controller,
+      required this.titles,
       this.activeIndex,
-      DropdownMenuController? controller,
       this.onTap,
-      Key? key,
       this.height = 46.0,
       this.maxLines = 1,
       this.overflow = TextOverflow.ellipsis,
       this.showLeftLine = true,
       GetItemLabel? getItemLabel})
       : getItemLabel = getItemLabel ?? defaultGetItemLabel,
-        assert(titles.isNotEmpty),
-        super(key: key, controller: controller);
+        assert(titles.isNotEmpty);
 
   @override
   DropdownState<DropdownWidget> createState() {
@@ -48,12 +47,11 @@ class DropdownHeader extends DropdownWidget {
   }
 }
 
-class _DropdownHeaderState extends DropdownState<DropdownHeader> {
-  Widget buildItem(
-      BuildContext context, dynamic title, bool selected, int index) {
+class _DropdownHeaderState<T> extends DropdownState<DropdownHeader<T>> {
+  Widget buildItem(BuildContext context, T title, bool selected, int index) {
     final Color primaryColor = Theme.of(context).primaryColor;
     final Color unselectedColor = Theme.of(context).unselectedWidgetColor;
-    final GetItemLabel getItemLabel = widget.getItemLabel;
+    final GetItemLabel<T> getItemLabel = widget.getItemLabel;
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -110,18 +108,18 @@ class _DropdownHeaderState extends DropdownState<DropdownHeader> {
   }
 
   int? _activeIndex;
-  List<dynamic>? _titles;
+  late List<T> _titles;
 
   @override
   Widget build(BuildContext context) {
     List<Widget> list = [];
 
     final int? activeIndex = _activeIndex;
-    final List<dynamic>? titles = _titles;
+    final List<T> titles = _titles;
     final double height = widget.height;
 
     for (int i = 0, c = widget.titles.length; i < c; ++i) {
-      list.add(buildItem(context, titles![i], i == activeIndex, i));
+      list.add(buildItem(context, titles[i], i == activeIndex, i));
     }
 
     list = list.map((Widget widget) {
@@ -161,8 +159,8 @@ class _DropdownHeaderState extends DropdownState<DropdownHeader> {
 
           setState(() {
             _activeIndex = null;
-            String? label = widget.getItemLabel(controller!.data);
-            _titles![controller!.menuIndex!] = label;
+            dynamic title = controller!.data;
+            _titles[controller!.menuIndex!] = title as T;
           });
         }
         break;
